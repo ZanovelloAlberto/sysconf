@@ -22,6 +22,7 @@ let
     '';
   };
 
+
   # currently, there is some friction between sway and gtk:
   # https://github.com/swaywm/sway/wiki/GTK-3-settings-on-Wayland
   # the suggested way to set gtk settings is with gsettings
@@ -32,25 +33,28 @@ let
     name = "configure-gtk";
     destination = "/bin/configure-gtk";
     executable = true;
-    text = let
-      schema = pkgs.gsettings-desktop-schemas;
-      datadir = "${schema}/share/gsettings-schemas/${schema.name}";
-    in ''
-      export XDG_DATA_DIRS=${datadir}:$XDG_DATA_DIRS
-      gnome_schema=org.gnome.desktop.interface
-      gsettings set $gnome_schema gtk-theme 'Dracula'
-    '';
+    text =
+      let
+        schema = pkgs.gsettings-desktop-schemas;
+        datadir = "${schema}/share/gsettings-schemas/${schema.name}";
+      in
+      ''
+        export XDG_DATA_DIRS=${datadir}:$XDG_DATA_DIRS
+        gnome_schema=org.gnome.desktop.interface
+        gsettings set $gnome_schema gtk-theme 'Dracula'
+      '';
   };
-
 
 in
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
+      # Include the results of the hardware scan.
       ./hardware-configuration.nix
       <home-manager/nixos>
     ];
-   nixpkgs.config.allowUnfree = true;
+  nixpkgs.config =
+    { allowBroken = true; allowUnfree = true; };
 
   # Use the GRUB 2 boot loader.
   boot.loader.grub.enable = true;
@@ -79,97 +83,117 @@ in
   #   keyMap = "us";
   console.useXkbConfig = true; # use xkbOptions in tty.
   #};
-   # nixpkgs.config.allowUnfree = true; 
+  # nixpkgs.config.allowUnfree = true; 
   nix = {
-  package = pkgs.nixFlakes;
-  
-  settings = { 
-  	extra-experimental-features = [ "nix-command" "flakes" ];
-   };
-   };
+    package = pkgs.nixFlakes;
 
-  security.polkit.enable = true;
-   users.users.alberto = {
-     isNormalUser = true;
-     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-     packages = with pkgs; [
-       firefox
-	git
-       tree
-     ];
-   };
-   home-manager.useUserPackages = true;
-   home-manager.users.alberto = { pkgs, ... }: {
-home.stateVersion = "23.05"; 
-programs.neovim = {
-    enable = true;
-    defaultEditor = true;
-    viAlias = true;
-    vimAlias = true;
-    vimdiffAlias = true;
-    plugins = with pkgs.vimPlugins; [
-      nvim-lspconfig
-      nvim-treesitter.withAllGrammars
-      plenary-nvim
-      gruvbox-material
-      mini-nvim
-    ];
-  };
-     programs.foot.settings = {
-  main = {
-    term = "xterm-256color";
-
-    font="FiraCode Nerd Font Mono:style=Medium,Regular:size=10";
-    dpi-aware = "yes";
-  };
-
-  mouse = {
-    hide-when-typing = "yes";
-  };
-
-     };
-     wayland.windowManager.sway = {
-    enable = true;
-    config = rec {
-      input = rec { "*" = { xkb_layout = "us"; xkb_options = "caps:swapescape"; }; };
-      modifier = "Mod4";
-      # Use kitty as default terminal
-      terminal = "foot"; 
-      startup = [
-        # Launch Firefox on start
-        {command = "firefox";}
-      ];
+    settings = {
+      extra-experimental-features = [ "nix-command" "flakes" ];
     };
   };
-  home.packages = with pkgs;[ 
-        firefox
-	foot
-       tree
-       fish
-	   cargo
-	   clang
-	   zig
 
-       # google-chrome
-    alacritty # gpu accelerated terminal
-    dbus-sway-environment
-    configure-gtk
-    wayland
-    xdg-utils # for opening default programs when clicking links
-    glib # gsettings
-    dracula-theme # gtk theme
-    gnome3.adwaita-icon-theme  # default gnome cursors
-    swaylock
-	nerdfonts
-    swayidle
-    grim # screenshot functionality
-    slurp # screenshot functionality
-    wl-clipboard # wl-copy and wl-paste for copy/paste from stdin / stdout
-    bemenu # wayland clone of dmenu
-    mako # notification system developed by swaywm maintainer
-    wdisplays # tool to configure displays
-       ];
-};
+  security.polkit.enable = true;
+  users.users.alberto = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+    packages = with pkgs; [
+      firefox
+      git
+      tree
+    ];
+  };
+  # home-manager.useUserPackages = true;
+  home-manager.users.alberto = { config, pkgs, lib, ... }: {
+    home.stateVersion = "23.05";
+    programs.neovim = {
+      enable = true;
+      defaultEditor = true;
+      viAlias = true;
+      vimAlias = true;
+      vimdiffAlias = true;
+      plugins = with pkgs.vimPlugins; [
+        nvim-lspconfig
+        nvim-treesitter.withAllGrammars
+        plenary-nvim
+        gruvbox-material
+        mini-nvim
+      ];
+    };
+
+    programs.foot = {
+      enable = true;
+      settings = {
+        main = {
+          term = "xterm-256color";
+
+          font = "FiraCode Nerd Font Mono:style=Medium,Regular:size=20";
+          dpi-aware = "yes";
+        };
+        mouse = {
+          hide-when-typing = "yes";
+        };
+      };
+    };
+    wayland.windowManager.sway = {
+      enable = true;
+      config = {
+        keybindings =
+          let
+            modifier = config.wayland.windowManager.sway.config.modifier;
+          in
+          lib.mkOptionDefault
+            {
+              # "${modifier}+Return" = "exec ${pkgs.foot}/bin/foot";
+              # "${modifier}+Shift+q" = "kill";
+              "${modifier}+u" = "workspace next";
+              # "${modifier}+d" = "exec ${pkgs.dmenu}/bin/dmenu_path | ${pkgs.dmenu}/bin/dmenu | ${pkgs.findutils}/bin/xargs swaymsg exec --";
+            };
+
+        input = {
+          "*" = {
+            xkb_layout = "us";
+            xkb_options = "caps:swapescape";
+          };
+        };
+        modifier = "Mod4";
+        # Use kitty as default terminal
+        terminal = "foot";
+        startup = [
+          # Launch Firefox on start
+          { command = "firefox"; }
+        ];
+      };
+    };
+    home.packages = with pkgs;[
+      firefox
+      # foot
+      tree
+      fish
+      cargo
+      clang
+      zig
+      fish
+      unzip
+      # google-chrome
+      alacritty # gpu accelerated terminal
+      dbus-sway-environment
+      configure-gtk
+      wayland
+      xdg-utils # for opening default programs when clicking links
+      glib # gsettings
+      dracula-theme # gtk theme
+      gnome3.adwaita-icon-theme # default gnome cursors
+      swaylock
+      nerdfonts
+      swayidle
+      grim # screenshot functionality
+      slurp # screenshot functionality
+      wl-clipboard # wl-copy and wl-paste for copy/paste from stdin / stdout
+      bemenu # wayland clone of dmenu
+      mako # notification system developed by swaywm maintainer
+      wdisplays # tool to configure displays
+    ];
+  };
 
 
   # programs.mtr.enable = true;
@@ -185,11 +209,11 @@ programs.neovim = {
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
-  
-  
+
+
   # -------------------- SWAY
-    environment.systemPackages = with pkgs; [
-	git
+  environment.systemPackages = with pkgs; [
+    git
 
   ];
 
@@ -217,13 +241,14 @@ programs.neovim = {
 
   # enable sway window manager
   programs.sway = {
+
     enable = true;
     wrapperFeatures.gtk = true;
   };
-  
+
   # -------------------------------------
-  
-  
+
+
 
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
