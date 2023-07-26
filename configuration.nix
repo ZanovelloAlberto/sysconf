@@ -67,7 +67,6 @@ in
   # boot.loader.efi.efiSysMountPoint = "/boot/efi";
   # Define on which hard drive you want to install Grub.
   boot.loader.grub.device = "/dev/sda"; # or "nodev" for efi only
-  services.getty.autologinUser = "alberto";
   # networking.hostName = "nixos"; # Define your hostname.
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -95,7 +94,21 @@ in
       extra-experimental-features = [ "nix-command" "flakes" ];
     };
   };
-  # services.localtime.enable = true;
+  services = {
+    dbus.enable = true;
+
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      pulse.enable = true;
+    };
+
+    openssh.enable = true;
+    getty.autologinUser = "alberto";
+    localtimed.enable = true;
+    geoclue2.enable = true;
+  };
+
 
 
   security.polkit.enable = true;
@@ -104,6 +117,7 @@ in
     shell = pkgs.fish;
     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
   };
+
   # home-manager.useUserPackages = true;
   home-manager.users.alberto = { config, pkgs, lib, ... }: {
     home.stateVersion = "23.05";
@@ -169,6 +183,8 @@ in
           "*" = {
             xkb_layout = "us";
             xkb_options = "caps:swapescape";
+            repeat_delay = "200";
+            repeat_rate = "35";
           };
         };
         modifier = "Mod4";
@@ -219,7 +235,6 @@ in
   #   enableSSHSupport = true;
   # };
 
-  services.openssh.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
@@ -235,11 +250,6 @@ in
   ];
 
 
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    pulse.enable = true;
-  };
 
 
   # xdg-desktop-portal works by exposing a series of D-Bus interfaces
@@ -248,7 +258,6 @@ in
   # (/org/freedesktop/portal/desktop).
   # The portal interfaces include APIs for file access, opening URIs,
   # printing and others.
-  services.dbus.enable = true;
   xdg.portal = {
     enable = true;
     wlr.enable = true;
