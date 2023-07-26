@@ -8,14 +8,20 @@
       # home manager use our nixpkgs and not its own
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
   };
 
-  outputs = { self, nixpkgs }: {
-    # replace 'joes-desktop' with your hostname here.
-    nixosConfigurations.joes-desktop = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [ ./configuration.nix ];
+  outputs =
+    { self
+    , nixpkgs
+    , home-manager
+    , ...
+    }@attrs: {
+      # replace 'joes-desktop' with your hostname here.
+      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = attrs;
+        modules = [ ./configuration.nix ];
+      };
+
     };
-  };
 }

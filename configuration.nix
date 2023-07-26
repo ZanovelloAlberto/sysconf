@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running `nixos-help`).
 
-{ config, pkgs, ... }:
+{ pkgs, home-manager, ... }:
 let
   # bash script to let dbus know about important env variables and
   # propagate them to relevent services run at the end of sway config
@@ -51,10 +51,14 @@ in
     [
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      <home-manager/nixos>
+      home-manager.nixosModules.default
+      # <home-manager/nixos>
     ];
   nixpkgs.config =
-    { allowBroken = true; allowUnfree = true; };
+    {
+      allowBroken = true;
+      allowUnfree = true;
+    };
 
   # Use the GRUB 2 boot loader.
   boot.loader.grub.enable = true;
@@ -117,9 +121,9 @@ in
     #     mini-nvim
     #   ];
     # };
-    # services = {
-    #   gammastep = { provider = "geoclue2"; enable = true; };
-    # };
+    services = {
+      gammastep = { provider = "geoclue2"; enable = true; };
+    };
 
     programs = {
       git = {
