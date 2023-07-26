@@ -91,46 +91,55 @@ in
       extra-experimental-features = [ "nix-command" "flakes" ];
     };
   };
+  # services.localtime.enable = true;
+
 
   security.polkit.enable = true;
   users.users.alberto = {
     isNormalUser = true;
+    shell = pkgs.fish;
     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-    packages = with pkgs; [
-      firefox
-      git
-      tree
-    ];
   };
   # home-manager.useUserPackages = true;
   home-manager.users.alberto = { config, pkgs, lib, ... }: {
     home.stateVersion = "23.05";
-    programs.neovim = {
-      enable = true;
-      defaultEditor = true;
-      viAlias = true;
-      vimAlias = true;
-      vimdiffAlias = true;
-      plugins = with pkgs.vimPlugins; [
-        nvim-lspconfig
-        nvim-treesitter.withAllGrammars
-        plenary-nvim
-        gruvbox-material
-        mini-nvim
-      ];
-    };
+    # programs.neovim = {
+    #   enable = true;
+    #   defaultEditor = true;
+    #   viAlias = true;
+    #   vimAlias = true;
+    #   vimdiffAlias = true;
+    #   plugins = with pkgs.vimPlugins; [
+    #     nvim-lspconfig
+    #     nvim-treesitter.withAllGrammars
+    #     plenary-nvim
+    #     gruvbox-material
+    #     mini-nvim
+    #   ];
+    # };
+    # services = {
+    #   gammastep = { provider = "geoclue2"; enable = true; };
+    # };
 
-    programs.foot = {
-      enable = true;
-      settings = {
-        main = {
-          term = "xterm-256color";
+    programs = {
+      git = {
+        enable = true;
+        userName = "ZanovelloAlberto";
+        userEmail = "zanovello2002@gmail.com";
+      };
 
-          font = "FiraCode Nerd Font Mono:style=Medium,Regular:size=20";
-          dpi-aware = "yes";
-        };
-        mouse = {
-          hide-when-typing = "yes";
+      foot = {
+        enable = true;
+        settings = {
+          main = {
+            term = "xterm-256color";
+
+            font = "FiraCode Nerd Font Mono:style=Regular:size=13";
+            dpi-aware = "yes";
+          };
+          mouse = {
+            hide-when-typing = "yes";
+          };
         };
       };
     };
@@ -140,12 +149,15 @@ in
         keybindings =
           let
             modifier = config.wayland.windowManager.sway.config.modifier;
+            menu = config.wayland.windowManager.sway.config.menu;
           in
           lib.mkOptionDefault
             {
               # "${modifier}+Return" = "exec ${pkgs.foot}/bin/foot";
               # "${modifier}+Shift+q" = "kill";
               "${modifier}+u" = "workspace next";
+              "${modifier}+p" = "${menu}";
+              "${modifier}+o" = "pavucontrol";
               # "${modifier}+d" = "exec ${pkgs.dmenu}/bin/dmenu_path | ${pkgs.dmenu}/bin/dmenu | ${pkgs.findutils}/bin/xargs swaymsg exec --";
             };
 
@@ -160,14 +172,15 @@ in
         terminal = "foot";
         startup = [
           # Launch Firefox on start
-          { command = "firefox"; }
+          # { command = "firefox"; }
         ];
       };
     };
     home.packages = with pkgs;[
-      firefox
+      # firefox
       # foot
       tree
+      neovim
       fish
       cargo
       clang
@@ -240,10 +253,17 @@ in
   };
 
   # enable sway window manager
-  programs.sway = {
+  programs = {
+    fish = {
+      enable = true;
+      loginShellInit = "sway\n";
+    };
 
-    enable = true;
-    wrapperFeatures.gtk = true;
+    sway = {
+
+      enable = true;
+      wrapperFeatures.gtk = true;
+    };
   };
 
   # -------------------------------------
