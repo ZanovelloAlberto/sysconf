@@ -49,11 +49,17 @@ in
 {
   imports =
     [
-      # Include the results of the hardware scan.
       ./hardware-configuration.nix
       home-manager.nixosModules.default
-      # <home-manager/nixos>
     ];
+
+  nix = {
+    package = pkgs.nixFlakes;
+
+    settings = {
+      extra-experimental-features = [ "nix-command" "flakes" ];
+    };
+  };
   nixpkgs.config =
     {
       allowBroken = true;
@@ -68,37 +74,11 @@ in
       enable = true;
       device = "/dev/sda";
     };
-  # boot.loader.grub.efiSupport = true;
-  # boot.loader.grub.efiInstallAsRemovable = true;
-  # boot.loader.efi.efiSysMountPoint = "/boot/efi";
-  # Define on which hard drive you want to install Grub.
-  # networking.hostName = "nixos"; # Define your hostname.
-  # Pick only one of the below networking options.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
 
-  # Set your time zone.
-  # time.timeZone = "Europe/Amsterdam";
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Select internationalisation properties.
-  # i18n.defaultLocale = "en_US.UTF-8";
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
   console.useXkbConfig = true; # use xkbOptions in tty.
-  #};
-  # nixpkgs.config.allowUnfree = true; 
-  nix = {
-    package = pkgs.nixFlakes;
 
-    settings = {
-      extra-experimental-features = [ "nix-command" "flakes" ];
-    };
-  };
+
+
   services = {
     dbus.enable = true;
 
@@ -179,9 +159,9 @@ in
               # "${modifier}+Return" = "exec ${pkgs.foot}/bin/foot";
               # "${modifier}+Shift+q" = "kill";
               "${modifier}+u" = "workspace next";
-              "${modifier}+p" = "${menu}";
+              # "${modifier}+p" = "${menu}";
               "${modifier}+o" = "pavucontrol";
-              # "${modifier}+d" = "exec ${pkgs.dmenu}/bin/dmenu_path | ${pkgs.dmenu}/bin/dmenu | ${pkgs.findutils}/bin/xargs swaymsg exec --";
+              "${modifier}+p" = "exec ${pkgs.dmenu}/bin/dmenu_path | ${pkgs.dmenu}/bin/dmenu | ${pkgs.findutils}/bin/xargs swaymsg exec --";
             };
 
         input = {
@@ -193,28 +173,39 @@ in
           };
         };
         modifier = "Mod4";
-        # Use kitty as default terminal
         terminal = "foot";
         startup = [
-          # Launch Firefox on start
-          # { command = "firefox"; }
+          # { command = ""; }
         ];
       };
     };
     home.packages = with pkgs;[
-      # firefox
-      # foot
-      tree
+      # tui 
       neovim
       fish
-      cargo
+      kakoune
+
+      # cli 
+      procs
+      tree
+      fd
+      du-dust
+      bat
+      hexyl
+      unzip
+
+      # gui 
+      alacritty # gpu accelerated terminal
+      foot
       pavucontrol
+
+      # languages 
+      cargo
       clang
       zig
-      fish
-      unzip
-      # google-chrome
-      alacritty # gpu accelerated terminal
+
+      #wayland 
+      sway
       dbus-sway-environment
       configure-gtk
       wayland
@@ -235,39 +226,17 @@ in
   };
 
 
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-
-
   # -------------------- SWAY
   environment.systemPackages = with pkgs; [
     git
-
   ];
 
 
 
 
-  # xdg-desktop-portal works by exposing a series of D-Bus interfaces
-  # known as portals under a well-known name
-  # (org.freedesktop.portal.Desktop) and object path
-  # (/org/freedesktop/portal/desktop).
-  # The portal interfaces include APIs for file access, opening URIs,
-  # printing and others.
   xdg.portal = {
     enable = true;
     wlr.enable = true;
-    # gtk portal needed to make gtk apps happy
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   };
 
@@ -284,8 +253,6 @@ in
       wrapperFeatures.gtk = true;
     };
   };
-
-  # -------------------------------------
 
 
 
