@@ -1,7 +1,11 @@
 {
   description = "nixos conf";
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-23.05";
+    nixpkgs = {
+      # config.allowunfree = true;
+      url = "github:nixos/nixpkgs?ref=nixos-23.05";
+
+    };
     #nixpkgs-unstable.url = "github:nixos/nixpkgs?ref=nixos-unstable";
 
     home-manager = {
@@ -54,6 +58,7 @@
 
     in
     {
+ 
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         inherit system;
         pkgs = legacyPackages;

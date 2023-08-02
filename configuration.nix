@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running `nixos-help`).
 
-{ pkgs, home-manager, ... }:
+{ pkgs, lib, home-manager, ... }:
 let
   # bash script to let dbus know about important env variables and
   # propagate them to relevent services run at the end of sway config
@@ -21,6 +21,7 @@ let
       systemctl --user start pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr
     '';
   };
+  # pkgs.config.allowUnfree = true;
 
 
   # currently, there is some friction between sway and gtk:
@@ -61,8 +62,12 @@ in
       extra-experimental-features = [ "nix-command" "flakes" ];
     };
   };
+
   nixpkgs.config =
     {
+      allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+        "google-chrome"
+      ];
       allowBroken = true;
       allowUnfree = true;
     };
@@ -493,7 +498,7 @@ in
       bat
       hexyl
       unzip
-	  ripgrep
+      ripgrep
 
       # gui 
       alacritty # gpu accelerated terminal
@@ -501,6 +506,7 @@ in
       pavucontrol
       zathura
       imv
+      # google-chrome
 
       # languages 
       cargo
@@ -534,6 +540,7 @@ in
   # -------------------- SWAY
   environment.systemPackages = with pkgs; [
     git
+	google-chrome
   ];
 
 
