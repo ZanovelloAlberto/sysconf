@@ -44,6 +44,7 @@ let
         gsettings set $gnome_schema gtk-theme 'Dracula'
       '';
   };
+  # timer = [ ./pkgs/timer.nix ];
 
 in
 {
@@ -69,7 +70,6 @@ in
   # Use the GRUB 2 boot loader.
   boot.loader.grub =
     {
-
       splashImage = ./splash.png;
       enable = true;
       device = "/dev/sda";
@@ -99,36 +99,267 @@ in
   security.polkit.enable = true;
   users.users.alberto = {
     isNormalUser = true;
-    shell = pkgs.fish;
+    shell = pkgs.bash;
     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
   };
 
   # home-manager.useUserPackages = true;
   home-manager.users.alberto = { config, pkgs, lib, ... }: {
     home.stateVersion = "23.05";
-    # programs.neovim = {
-    #   enable = true;
-    #   defaultEditor = true;
-    #   viAlias = true;
-    #   vimAlias = true;
-    #   vimdiffAlias = true;
-    #   plugins = with pkgs.vimPlugins; [
-    #     nvim-lspconfig
-    #     nvim-treesitter.withAllGrammars
-    #     plenary-nvim
-    #     gruvbox-material
-    #     mini-nvim
-    #   ];
-    # };
+    # programs.neovim =
+    #   {
+    #     enable = true;
+    #     package = pkgs.neovim-nightly.overrideAttrs (_: { CFLAGS = "-O3"; });
+    #     vimAlias = true;
+    #     viAlias = true;
+    #     withNodeJs = true;
+    #     withPython3 = true;
+    #     withRuby = false;
+    #     extraConfig = ''
+    #       let mapleader=" "
+    #
+    #       lua <<EOF
+    #       require("config.general")
+    #       require("config.remaps")
+    #       EOF
+    #     '';
+    #     plugins = with pkgs.nvimPlugins; [
+    #       {
+    #         plugin = pkgs.unstable.vimPlugins.nvim-treesitter.withAllGrammars;
+    #         type = "lua";
+    #         config = ''
+    #
+    #           require("config.treesitter")
+    #       '';
+    #       }
+    #       nvim-treesitter-textobjects
+    #       nvim-ts-rainbow
+    #       {
+    #         plugin = telescope;
+    #         type = "lua";
+    #         config = ''
+    #           require("config.telescope")
+    #         '';
+    #       }
+    #       telescope-file-browser
+    #       plenary
+    #       {
+    #         plugin = nvim-tree;
+    #         type = "lua";
+    #         config = ''
+    #           require("config.tree")
+    #         '';
+    #       }
+    #       nvim-web-devicons
+    #       {
+    #         plugin = which-key;
+    #         type = "lua";
+    #         config = ''
+    #           vim.api.nvim_set_option("timeoutlen", 300)
+    #           require("which-key").setup({})
+    #         '';
+    #       }
+    #       {
+    #         plugin = Comment;
+    #         type = "lua";
+    #         config = ''
+    #           require("config.comment")
+    #         '';
+    #       }
+    #       vim-surround
+    #       vim-repeat
+    #       {
+    #         plugin = gitsigns;
+    #         type = "lua";
+    #         config = ''
+    #           require("gitsigns").setup()
+    #         '';
+    #       }
+    #       {
+    #         plugin = dashboard-nvim;
+    #         type = "lua";
+    #         config = ''
+    #           require("config.dashboard")
+    #         '';
+    #       }
+    #       {
+    #         plugin = oceanic-next;
+    #         type = "lua";
+    #         config = ''
+    #           require("config.theme")
+    #         '';
+    #       }
+    #       {
+    #         plugin = indent-blankline;
+    #         type = "lua";
+    #         config = ''
+    #           require("config.blankline")
+    #         '';
+    #       }
+    #       lualine
+    #       nvim-navic
+    #       {
+    #         plugin = nvim-colorizer;
+    #         type = "lua";
+    #         config = ''
+    #           require("colorizer").setup()
+    #         '';
+    #       }
+    #       {
+    #         plugin = dressing;
+    #         type = "lua";
+    #         config = ''
+    #           require("dressing").setup()
+    #         '';
+    #       }
+    #       popup
+    #     ];
+    #     extraPackages = with pkgs; [
+    #       # Essentials
+    #       nodePackages.npm
+    #       nodePackages.neovim
+    #
+    #       # Telescope dependencies
+    #       ripgrep
+    #       fd
+    #     ];
+    #   };
+    #
+
+
+    ## sldfdlsfj l
+
     services = {
       gammastep = { provider = "geoclue2"; enable = true; };
+      # polybar = {
+      #
+      #   enable = true;
+      #   script = "polybar bar &";
+      #   config = {
+      #     "bar/top" = {
+      #       monitor = "VGA-1";
+      #       width = "100%";
+      #       height = "3%";
+      #       radius = 0;
+      #       modules-center = "date";
+      #     };
+      #     "module/date" = {
+      #       type = "internal/date";
+      #       internal = 5;
+      #       date = "%d.%m.%y";
+      #       time = "%H:%M";
+      #       label = "%time%  %date%";
+      #     };
+      #   };
+      #   settings = {
+      #     "module/volume" = {
+      #       type = "internal/pulseaudio";
+      #       format.volume = "<ramp-volume> <label-volume>";
+      #       label.muted.text = "🔇";
+      #       label.muted.foreground = "#666";
+      #       ramp.volume = [ "🔈" "🔉" "🔊" ];
+      #       click.right = "pavucontrol &";
+      #     };
+      #   };
+      # };
+
     };
+    #xdg.enable = true;
 
     programs = {
+
+      eww = {
+        # enable = true;
+        configDir = ./config/eww;
+      };
+
       git = {
         enable = true;
         userName = "ZanovelloAlberto";
         userEmail = "zanovello2002@gmail.com";
+      };
+
+      fuzzel =
+        {
+          enable = true;
+          # package = config.lib.test.mkStubPackage { };
+
+          settings = {
+            main = {
+              icons-enabled = "no";
+              # line-height= 10;
+              horizontal-pad = 30;
+              vertical-pad = 10;
+              letter-spacing = 2;
+              font = "monospace:size=20";
+              dpi-aware = "yes";
+              terminal = "${pkgs.foot}/bin/foot";
+              # layer = "overlay";
+            };
+            colors = {
+              text = "00ff00ff";
+              selection = "ffeeffff";
+              background = "000000cc";
+            };
+
+            border = {
+              # width=1
+              radius = 0;
+              # width = 6;
+            };
+          };
+        };
+
+      i3status-rust = {
+        enable = true;
+        bars = {
+          top = {
+            blocks = [
+              {
+                block = "disk_space";
+                path = "/";
+                info_type = "available";
+                interval = 60;
+                warning = 20.0;
+                alert = 10.0;
+              }
+              {
+                block = "memory";
+                format = " $icon $mem_used_percents ";
+                format_alt = " $icon $swap_used_percents ";
+                # warning_mem = " $icon $mem_used_percents ";
+                # warning_swap = " $icon $swap_used_percents ";
+              }
+              {
+                block = "cpu";
+                interval = 1;
+              }
+              {
+                block = "load";
+                interval = 1;
+                format = " $icon $1m ";
+              }
+              { block = "sound"; }
+              {
+                block = "time";
+                interval = 60;
+                format = " $timestamp.datetime(f:'%a %d/%m %R') ";
+              }
+            ];
+            settings = {
+              theme = {
+                theme = "solarized-dark";
+                overrides = {
+                  idle_bg = "#123456";
+                  idle_fg = "#abcdef";
+                };
+              };
+            };
+            icons = "awesome5";
+            theme = "gruvbox-dark";
+          };
+
+        };
       };
 
       foot = {
@@ -136,34 +367,100 @@ in
         settings = {
           main = {
             term = "xterm-256color";
-
-            font = "FiraCode Nerd Font Mono:style=Regular:size=13";
+            font = "FiraCode Nerd Font Mono:style=Regular:size=10";
             dpi-aware = "yes";
           };
           mouse = {
             hide-when-typing = "yes";
           };
+          colors = {
+            background = "222222";
+
+          };
         };
       };
     };
+
+    # xdg.configFile."yambar/config.yml".source = ./config.yml;
+    # xdg.configFile."rootbar/config".source = ./config;
+    # xdg.configFile."rootbar/style.css".source = ./style.css;
+    # xdg.configFile."yambar/config.yml".source = (pkgs.formats.yaml { }).generate "something" {
+    #   settings = {
+    #     draw_bold_text_with_bright_colors = true;
+    #     dynamic_title = true;
+    #     live_config_reload = true;
+    #     window.dimensions = {
+    #       columns = 0;
+    #       lines = 0;
+    #     };
+    #     scrolling = {
+    #       history = 10000;
+    #       multiplier = 3;
+    #     };
+    #   };
+    # };
+
     wayland.windowManager.sway = {
       enable = true;
-      config = {
+
+
+      config = rec {
+        fonts = {
+          names = [ "DejaVu Sans Mono" "FontAwesome5Free" ];
+          style = "Bold Semi-Condensed";
+          size = 0.1;
+        };
+        window = {
+          border = 12;
+          # commands = [{ command = "border pixel 20";
+          # criteria = { class = "*"; };
+          # }];
+        };
+        # window.titlebar = false;
+        # default_border none
+        # default_border = 6;
+        # titlebar_border_thickness = 2;
+        # default_floating_border none font pango:monospace 3
+        # # hide_edge_borders smart
+        # titlebar_padding 1
+        # titlebar_border_thickness 0
+        # gaps inner 0
+        # gaps outer 0
+        # "titlebar_padding" = "1";
+
         keybindings =
           let
             modifier = config.wayland.windowManager.sway.config.modifier;
-            menu = config.wayland.windowManager.sway.config.menu;
+            menu = "fuzzel";
+            # config.wayland.windowManager.sway.config.menu = menu;
+
           in
           lib.mkOptionDefault
             {
               # "${modifier}+Return" = "exec ${pkgs.foot}/bin/foot";
-              # "${modifier}+Shift+q" = "kill";
+              "${modifier}+Shift+q" = "kill";
               "${modifier}+u" = "workspace next";
-              # "${modifier}+p" = "${menu}";
-              "${modifier}+o" = "pavucontrol";
-              "${modifier}+p" = "exec ${pkgs.dmenu}/bin/dmenu_path | ${pkgs.dmenu}/bin/dmenu | ${pkgs.findutils}/bin/xargs swaymsg exec --";
+              "${modifier}+o" = "exec pavucontrol";
+              "${modifier}+p" = "exec ${menu}";
+              "${modifier}+d" = "exec ${menu}";
+              "${modifier}+Shift+p" = ''
+                			  exec grim -g "$(slurp -d)" - | wl-copy && wl-paste > ~/lastscreen.png'';
             };
 
+        bars = [
+          {
+            mode = "dock";
+            statusCommand = "i3status-rs ~/.config/i3status-rust/config-top.toml";
+            hiddenState = "hide";
+            position = "top";
+            workspaceButtons = true;
+            workspaceNumbers = true;
+            fonts = {
+              names = [ "monospace" ];
+              size = 8.0;
+            };
+          }
+        ];
         input = {
           "*" = {
             xkb_layout = "us";
@@ -182,10 +479,13 @@ in
     home.packages = with pkgs;[
       # tui 
       neovim
-      fish
       kakoune
+      eww-wayland
+      # yambar
+      # nvim-config.packages.x86_64-linux.default
 
       # cli 
+      # timer
       procs
       tree
       fd
@@ -193,11 +493,14 @@ in
       bat
       hexyl
       unzip
+	  ripgrep
 
       # gui 
       alacritty # gpu accelerated terminal
       foot
       pavucontrol
+      zathura
+      imv
 
       # languages 
       cargo
@@ -206,6 +509,8 @@ in
 
       #wayland 
       sway
+      # yambar
+      fuzzel
       dbus-sway-environment
       configure-gtk
       wayland
@@ -242,8 +547,11 @@ in
 
   # enable sway window manager
   programs = {
-    fish = {
-      enable = true;
+    # fish = {
+    #   enable = true;
+    #   loginShellInit = "sway\n";
+    # };
+    bash = {
       loginShellInit = "sway\n";
     };
 
