@@ -235,7 +235,13 @@ in
     ## sldfdlsfj l
 
     services = {
-      gammastep = { provider = "geoclue2"; enable = true; };
+      gammastep = {
+        provider = "geoclue2";
+        enable = true;
+		# lower is warmer
+        temperature = { night = 1500; };
+      };
+
       # polybar = {
       #
       #   enable = true;
@@ -416,7 +422,9 @@ in
           size = 0.1;
         };
         window = {
-          border = 12;
+
+          border = 4; #12; is the same of title boarder 
+
           # commands = [{ command = "border pixel 20";
           # criteria = { class = "*"; };
           # }];
@@ -484,6 +492,7 @@ in
     home.packages = with pkgs;[
       # tui 
       neovim
+      nodejs
       kakoune
       eww-wayland
       # yambar
@@ -540,7 +549,7 @@ in
   # -------------------- SWAY
   environment.systemPackages = with pkgs; [
     git
-	google-chrome
+    google-chrome
   ];
 
 
