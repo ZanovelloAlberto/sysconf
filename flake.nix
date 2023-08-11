@@ -28,6 +28,7 @@
     #   url = "github:the-argus/nvim-config/67e6def89dd1dd32bfcd1be9077a554cf06e1cc4";
     #   inputs.nixpkgs.follows = "nixpkgs-unstable";
     # };
+    nix-doom-emacs.url = "github:vlaci/nix-doom-emacs";
 
   };
 
@@ -37,6 +38,7 @@
     , neovim-plugins
     , neovim-nightly-overlay
     , home-manager
+    , nix-doom-emacs
     , ...
     }@inputs:
     let
@@ -58,7 +60,7 @@
 
     in
     {
- 
+
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         inherit system;
         pkgs = legacyPackages;

@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running `nixos-help`).
 
-{ pkgs, lib, home-manager, ... }:
+{ pkgs, lib, home-manager, nix-doom-emacs, config, ... }:
 let
   # bash script to let dbus know about important env variables and
   # propagate them to relevent services run at the end of sway config
@@ -21,6 +21,8 @@ let
       systemctl --user start pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr
     '';
   };
+  i2c = config.boot.kernelPackages.callPackage ./pkgs/i2c_341.nix { };
+  droidcam = config.boot.kernelPackages.callPackage ./pkgs/droidcam.nix { };
   # pkgs.config.allowUnfree = true;
 
 
@@ -45,7 +47,24 @@ let
         gsettings set $gnome_schema gtk-theme 'Dracula'
       '';
   };
-  # timer = [ ./pkgs/timer.nix ];
+  hideXdg = {
+    name = "deleted";
+    exec = "echo deleted";
+    noDisplay = true;
+  };
+  deletexdg = list: builtins.listToAttrs
+    ((x: builtins.map
+      (i: {
+        name = i;
+        value = hideXdg;
+        # {
+        #         name = i;
+        #         exec = i;
+        #         noDisplay = true;
+        #       };
+      })
+      x)
+      list);
 
 in
 {
@@ -65,26 +84,33 @@ in
 
   nixpkgs.config =
     {
-      allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-        "google-chrome"
-      ];
+      # allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+      #   "google-chrome"
+      #   "discord"
+      # ];
       allowBroken = true;
       allowUnfree = true;
     };
 
   # Use the GRUB 2 boot loader.
-  boot.loader.grub =
-    {
-      splashImage = ./splash.png;
-      enable = true;
-      device = "/dev/sda";
-    };
+  boot = {
+    extraModulePackages = [ i2c droidcam ];
+    loader.grub =
+      {
+        splashImage = ./splash.png;
+        enable = true;
+        device = "/dev/sda";
+      };
+  };
 
   console.useXkbConfig = true; # use xkbOptions in tty.
 
 
 
   services = {
+    emacs = {
+      enable = true;
+    };
     dbus.enable = true;
 
     pipewire = {
@@ -111,174 +137,53 @@ in
   # home-manager.useUserPackages = true;
   home-manager.users.alberto = { config, pkgs, lib, ... }: {
     home.stateVersion = "23.05";
-    # programs.neovim =
-    #   {
-    #     enable = true;
-    #     package = pkgs.neovim-nightly.overrideAttrs (_: { CFLAGS = "-O3"; });
-    #     vimAlias = true;
-    #     viAlias = true;
-    #     withNodeJs = true;
-    #     withPython3 = true;
-    #     withRuby = false;
-    #     extraConfig = ''
-    #       let mapleader=" "
-    #
-    #       lua <<EOF
-    #       require("config.general")
-    #       require("config.remaps")
-    #       EOF
-    #     '';
-    #     plugins = with pkgs.nvimPlugins; [
-    #       {
-    #         plugin = pkgs.unstable.vimPlugins.nvim-treesitter.withAllGrammars;
-    #         type = "lua";
-    #         config = ''
-    #
-    #           require("config.treesitter")
-    #       '';
-    #       }
-    #       nvim-treesitter-textobjects
-    #       nvim-ts-rainbow
-    #       {
-    #         plugin = telescope;
-    #         type = "lua";
-    #         config = ''
-    #           require("config.telescope")
-    #         '';
-    #       }
-    #       telescope-file-browser
-    #       plenary
-    #       {
-    #         plugin = nvim-tree;
-    #         type = "lua";
-    #         config = ''
-    #           require("config.tree")
-    #         '';
-    #       }
-    #       nvim-web-devicons
-    #       {
-    #         plugin = which-key;
-    #         type = "lua";
-    #         config = ''
-    #           vim.api.nvim_set_option("timeoutlen", 300)
-    #           require("which-key").setup({})
-    #         '';
-    #       }
-    #       {
-    #         plugin = Comment;
-    #         type = "lua";
-    #         config = ''
-    #           require("config.comment")
-    #         '';
-    #       }
-    #       vim-surround
-    #       vim-repeat
-    #       {
-    #         plugin = gitsigns;
-    #         type = "lua";
-    #         config = ''
-    #           require("gitsigns").setup()
-    #         '';
-    #       }
-    #       {
-    #         plugin = dashboard-nvim;
-    #         type = "lua";
-    #         config = ''
-    #           require("config.dashboard")
-    #         '';
-    #       }
-    #       {
-    #         plugin = oceanic-next;
-    #         type = "lua";
-    #         config = ''
-    #           require("config.theme")
-    #         '';
-    #       }
-    #       {
-    #         plugin = indent-blankline;
-    #         type = "lua";
-    #         config = ''
-    #           require("config.blankline")
-    #         '';
-    #       }
-    #       lualine
-    #       nvim-navic
-    #       {
-    #         plugin = nvim-colorizer;
-    #         type = "lua";
-    #         config = ''
-    #           require("colorizer").setup()
-    #         '';
-    #       }
-    #       {
-    #         plugin = dressing;
-    #         type = "lua";
-    #         config = ''
-    #           require("dressing").setup()
-    #         '';
-    #       }
-    #       popup
-    #     ];
-    #     extraPackages = with pkgs; [
-    #       # Essentials
-    #       nodePackages.npm
-    #       nodePackages.neovim
-    #
-    #       # Telescope dependencies
-    #       ripgrep
-    #       fd
-    #     ];
-    #   };
-    #
+
+    xdg =
+      {
 
 
-    ## sldfdlsfj l
 
+        desktopEntries = {
+
+          # discord = {
+          #   name = "Discord";
+          #   exec = "discord";
+          #   noDisplay = true;
+          # };
+          # emacs = {
+          #   name = "emacs";
+          #   exec = "emacs";
+          #   noDisplay = true;
+          # };
+          # "org.codeberg.dnkl.foot-server", "org.codeberg.dnkl.foot-server" = {
+          #   name = "poot";
+          #   exec = "poot";
+          #   noDisplay = true;
+          # };
+          # firefox = {
+          #   noDisplay = true;
+          #   name = "firefox";
+          # };
+        } // (deletexdg [
+          "discord"
+          "emacs"
+          "org.codeberg.dnkl.foot-server"
+          "org.codeberg.dnkl.foot"
+          "umpv"
+		  "gammastep-indicator"
+        ]);
+      };
     services = {
       gammastep = {
         provider = "geoclue2";
         enable = true;
-		# lower is warmer
+        # lower is warmer
         temperature = { night = 1500; };
       };
 
-      # polybar = {
-      #
-      #   enable = true;
-      #   script = "polybar bar &";
-      #   config = {
-      #     "bar/top" = {
-      #       monitor = "VGA-1";
-      #       width = "100%";
-      #       height = "3%";
-      #       radius = 0;
-      #       modules-center = "date";
-      #     };
-      #     "module/date" = {
-      #       type = "internal/date";
-      #       internal = 5;
-      #       date = "%d.%m.%y";
-      #       time = "%H:%M";
-      #       label = "%time%  %date%";
-      #     };
-      #   };
-      #   settings = {
-      #     "module/volume" = {
-      #       type = "internal/pulseaudio";
-      #       format.volume = "<ramp-volume> <label-volume>";
-      #       label.muted.text = "🔇";
-      #       label.muted.foreground = "#666";
-      #       ramp.volume = [ "🔈" "🔉" "🔊" ];
-      #       click.right = "pavucontrol &";
-      #     };
-      #   };
-      # };
-
     };
-    #xdg.enable = true;
 
     programs = {
-
       eww = {
         # enable = true;
         configDir = ./config/eww;
@@ -374,7 +279,10 @@ in
       };
 
       foot = {
-        enable = true;
+        # enable = true;
+        server = {
+          enable = true;
+        };
         settings = {
           main = {
             term = "xterm-256color";
@@ -413,6 +321,7 @@ in
 
     wayland.windowManager.sway = {
       enable = true;
+
 
 
       config = rec {
@@ -492,6 +401,7 @@ in
     home.packages = with pkgs;[
       # tui 
       neovim
+      # emacs
       nodejs
       kakoune
       eww-wayland
@@ -510,12 +420,12 @@ in
       ripgrep
 
       # gui 
-      alacritty # gpu accelerated terminal
+      # alacritty 
       foot
-      pavucontrol
-      zathura
-      imv
-      # google-chrome
+      pavucontrol # audio control
+      zathura # pdf viewer
+      imv # image viewer 
+      mpv # video player
 
       # languages 
       cargo
@@ -542,6 +452,7 @@ in
       bemenu # wayland clone of dmenu
       mako # notification system developed by swaywm maintainer
       wdisplays # tool to configure displays
+
     ];
   };
 
@@ -550,15 +461,20 @@ in
   environment.systemPackages = with pkgs; [
     git
     google-chrome
+    discord
+    obs-studio
+
   ];
 
 
 
 
-  xdg.portal = {
-    enable = true;
-    wlr.enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  xdg = {
+    portal = {
+      enable = true;
+      wlr.enable = true;
+      extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    };
   };
 
   # enable sway window manager
