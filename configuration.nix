@@ -21,6 +21,7 @@ let
       systemctl --user start pipewire pipewire-media-session xdg-desktop-portal xdg-desktop-portal-wlr
     '';
   };
+  user = "alberto";
   i2c = config.boot.kernelPackages.callPackage ./pkgs/i2c_341.nix { };
   droidcam = config.boot.kernelPackages.callPackage ./pkgs/droidcam.nix { };
   # pkgs.config.allowUnfree = true;
@@ -65,6 +66,7 @@ let
       })
       x)
       list);
+  makeCfg = path: { ".config/${path}".source = ./config/${path}; };
 
 in
 {
@@ -108,6 +110,9 @@ in
 
 
   services = {
+    udev = {
+      packages = [pkgs.qmk-udev-rules];
+    };
     emacs = {
       enable = true;
     };
@@ -120,7 +125,7 @@ in
     };
 
     openssh.enable = true;
-    getty.autologinUser = "alberto";
+    getty.autologinUser = user;
     localtimed.enable = true;
     geoclue2.enable = true;
   };
@@ -129,14 +134,21 @@ in
 
   security.polkit.enable = true;
   users.users.alberto = {
+
     isNormalUser = true;
     shell = pkgs.bash;
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "media" "dialout" "wheel" ]; # Enable ‘sudo’ for the user.
   };
 
   # home-manager.useUserPackages = true;
-  home-manager.users.alberto = { config, pkgs, lib, ... }: {
-    home.stateVersion = "23.05";
+  home-manager.users.${user} = { config, pkgs, lib, ... }: {
+    home = {
+      sessionPath = [ "/home/${user}/.config/emacs/bin/" ];
+      stateVersion = "23.05";
+      username = user;
+      homeDirectory = "/home/${user}";
+      file = makeCfg "doom"; #// makeCfg "rootbar";
+    };
 
     xdg =
       {
@@ -165,12 +177,12 @@ in
           #   name = "firefox";
           # };
         } // (deletexdg [
-          "discord"
+          # "discord"
           "emacs"
           "org.codeberg.dnkl.foot-server"
           "org.codeberg.dnkl.foot"
           "umpv"
-		  "gammastep-indicator"
+          "gammastep-indicator"
         ]);
       };
     services = {
@@ -332,7 +344,7 @@ in
         };
         window = {
 
-          border = 4; #12; is the same of title boarder 
+          border = 4; #12; is the same of title boarder
 
           # commands = [{ command = "border pixel 20";
           # criteria = { class = "*"; };
@@ -366,7 +378,7 @@ in
               "${modifier}+p" = "exec ${menu}";
               "${modifier}+d" = "exec ${menu}";
               "${modifier}+Shift+p" = ''
-                			  exec grim -g "$(slurp -d)" - | wl-copy && wl-paste > ~/lastscreen.png'';
+                			      exec grim -g "$(slurp -d)" - | wl-copy && wl-paste > ~/lastscreen.png'';
             };
 
         bars = [
@@ -399,16 +411,17 @@ in
       };
     };
     home.packages = with pkgs;[
-      # tui 
+      # tui
       neovim
       # emacs
       nodejs
       kakoune
       eww-wayland
+	  pulseaudio
       # yambar
       # nvim-config.packages.x86_64-linux.default
 
-      # cli 
+      # cli
       # timer
       procs
       tree
@@ -419,20 +432,23 @@ in
       unzip
       ripgrep
 
-      # gui 
-      # alacritty 
+      # gui
+      # alacritty
       foot
+	  via
+	  qmk
       pavucontrol # audio control
       zathura # pdf viewer
-      imv # image viewer 
+      imv # image viewer
       mpv # video player
 
-      # languages 
+      # languages
       cargo
       clang
+      zls
       zig
 
-      #wayland 
+      #wayland
       sway
       # yambar
       fuzzel
