@@ -2,7 +2,13 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running `nixos-help`).
 
-{ pkgs, lib, home-manager, nix-doom-emacs, config, ... }:
+{ inputs
+# , outputs
+# , lib
+, config
+, pkgs
+, ...
+}:
 let
   # bash script to let dbus know about important env variables and
   # propagate them to relevent services run at the end of sway config
@@ -25,8 +31,6 @@ let
   i2c = config.boot.kernelPackages.callPackage ./pkgs/i2c_341.nix { };
   droidcam = config.boot.kernelPackages.callPackage ./pkgs/droidcam.nix { };
   # pkgs.config.allowUnfree = true;
-
-
   # currently, there is some friction between sway and gtk:
   # https://github.com/swaywm/sway/wiki/GTK-3-settings-on-Wayland
   # the suggested way to set gtk settings is with gsettings
@@ -41,7 +45,7 @@ let
       let
         schema = pkgs.gsettings-desktop-schemas;
         datadir = "${schema}/share/gsettings-schemas/${schema.name}";
-      in
+     in
       ''
         export XDG_DATA_DIRS=${datadir}:$XDG_DATA_DIRS
         gnome_schema=org.gnome.desktop.interface
@@ -73,7 +77,8 @@ in
   imports =
     [
       ./hardware-configuration.nix
-      home-manager.nixosModules.default
+      inputs.home-manager.nixosModules.default
+      # inputs.doom-emacs.hmModule
     ];
 
   nix = {
@@ -111,7 +116,7 @@ in
 
   services = {
     udev = {
-      packages = [pkgs.qmk-udev-rules];
+      packages = [ pkgs.qmk-udev-rules ];
     };
     emacs = {
       enable = true;
@@ -142,19 +147,17 @@ in
 
   # home-manager.useUserPackages = true;
   home-manager.users.${user} = { config, pkgs, lib, ... }: {
+    imports = [ inputs.doom-emacs.hmModule ];
     home = {
       sessionPath = [ "/home/${user}/.config/emacs/bin/" ];
       stateVersion = "23.05";
       username = user;
       homeDirectory = "/home/${user}";
-      file = makeCfg "doom"; #// makeCfg "rootbar";
+      # file = makeCfg "doom"; #// makeCfg "rootbar";
     };
 
     xdg =
       {
-
-
-
         desktopEntries = {
 
           # discord = {
@@ -196,6 +199,62 @@ in
     };
 
     programs = {
+
+
+helix = {
+  enable = true;
+
+settings = {
+  theme = "base16_default";
+  editor = {
+    line-number = "relative";
+    lsp.display-messages = true;
+  };
+  keys.normal = {
+    space.space = "file_picker";
+    space.f = ":fmt";
+    space.w = ":w";
+    space.q = ":q";
+    "C-j" = ["move_visual_line_down" "move_visual_line_down"];
+    "C-k" = ["move_visual_line_up" "move_visual_line_up"];
+    esc = [ "collapse_selection" "keep_primary_selection" ];
+  };
+};
+  languages = {language = [{
+    name = "rust";
+    auto-format = false;
+  }];};
+   
+  
+};
+      doom-emacs = {
+        enable = true;
+        doomPrivateDir = ./config/doom; # Directory containing the config.el, init.el
+      };
+      tiny = {
+        enable = true;
+
+        settings = {
+          servers = [
+            {
+              addr = "irc.libera.chat";
+              port = 6697;
+              tls = true;
+              realname = "Alberto Zanovello";
+              nicks = [ "Alberto" "ll" ];
+            }
+            # {
+            #   addr = "chat.freenode.net";
+            # }
+          ];
+          defaults = {
+            nicks = [ "Alberto" "ll" ];
+            realname = "vola";
+            join = [ "#go-nuts" "#rust" ];
+            tls = true;
+          };
+        };
+      };
       eww = {
         # enable = true;
         configDir = ./config/eww;
@@ -219,7 +278,7 @@ in
               horizontal-pad = 30;
               vertical-pad = 10;
               letter-spacing = 2;
-              font = "monospace:size=20";
+              font = "monospace:size=22";
               dpi-aware = "yes";
               terminal = "${pkgs.foot}/bin/foot";
               # layer = "overlay";
@@ -291,14 +350,14 @@ in
       };
 
       foot = {
-        # enable = true;
-        server = {
-          enable = true;
-        };
+        enable = true;
+        # srver = {
+        #   enable = true;
+        # };
         settings = {
           main = {
             term = "xterm-256color";
-            font = "FiraCode Nerd Font Mono:style=Regular:size=10";
+            font = "FiraCode Nerd Font Mono:style=Regular:size=14";
             dpi-aware = "yes";
           };
           mouse = {
@@ -336,7 +395,7 @@ in
 
 
 
-      config = rec {
+      config = {
         fonts = {
           names = [ "DejaVu Sans Mono" "FontAwesome5Free" ];
           style = "Bold Semi-Condensed";
@@ -372,9 +431,9 @@ in
           lib.mkOptionDefault
             {
               # "${modifier}+Return" = "exec ${pkgs.foot}/bin/foot";
-              "${modifier}+Shift+q" = "kill";
+              "${modifier}+Ctrl+q" = "kill";
               "${modifier}+u" = "workspace next";
-              "${modifier}+o" = "exec pavucontrol";
+              "${modifier}+o" = "exec foot -- ncpamixer";
               "${modifier}+p" = "exec ${menu}";
               "${modifier}+d" = "exec ${menu}";
               "${modifier}+Shift+p" = ''
@@ -398,7 +457,7 @@ in
         input = {
           "*" = {
             xkb_layout = "us";
-            xkb_options = "caps:swapescape";
+            #xkb_options = "caps:swapescape";
             repeat_delay = "200";
             repeat_rate = "35";
           };
@@ -412,12 +471,16 @@ in
     };
     home.packages = with pkgs;[
       # tui
-      neovim
+      
+      neovim-qt
+	    helix
+      nil
       # emacs
+      virtualbox
       nodejs
       kakoune
       eww-wayland
-	  pulseaudio
+      pulseaudio
       # yambar
       # nvim-config.packages.x86_64-linux.default
 
@@ -435,9 +498,9 @@ in
       # gui
       # alacritty
       foot
-	  via
-	  qmk
-      pavucontrol # audio control
+      via
+      qmk
+      ncpamixer # audio control
       zathura # pdf viewer
       imv # image viewer
       mpv # video player
@@ -482,9 +545,6 @@ in
 
   ];
 
-
-
-
   xdg = {
     portal = {
       enable = true;
@@ -509,8 +569,6 @@ in
       wrapperFeatures.gtk = true;
     };
   };
-
-
 
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you

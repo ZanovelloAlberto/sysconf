@@ -25,10 +25,10 @@
       "KC_NO",
       "KC_NO",
       "KC_NO",
-      "KC_LGUI",
       "FN_MO13",
+      "KC_LGUI",
       "KC_SPC",
-      "KC_ENT",
+      "KC_BSPC",
       "KC_P",
       "KC_O",
       "KC_I",
@@ -49,9 +49,9 @@
       "KC_NO",
       "KC_NO",
       "KC_NO",
-      "KC_RALT",
       "FN_MO13",
-      "KC_BSPC"
+      "KC_RALT",
+      "KC_ENT"
     ],
     [
       "KC_GRV",
