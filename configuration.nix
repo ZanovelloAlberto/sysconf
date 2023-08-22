@@ -205,7 +205,7 @@ helix = {
   enable = true;
 
 settings = {
-  theme = "base16_default";
+  theme = "adwaita-dark";
   editor = {
     line-number = "relative";
     lsp.display-messages = true;
@@ -215,8 +215,10 @@ settings = {
     space.f = ":fmt";
     space.w = ":w";
     space.q = ":q";
-    "C-j" = ["move_visual_line_down" "move_visual_line_down"];
-    "C-k" = ["move_visual_line_up" "move_visual_line_up"];
+    space.t = ":run-shell-command foot";
+    space.v = ":run-shell-command nix-shell --run foot";
+    "C-j" = ["move_visual_line_down" "move_visual_line_down""move_visual_line_down"];
+    "C-k" = ["move_visual_line_up" "move_visual_line_up""move_visual_line_up"];
     esc = [ "collapse_selection" "keep_primary_selection" ];
   };
 };
@@ -227,6 +229,7 @@ settings = {
    
   
 };
+
       doom-emacs = {
         enable = true;
         doomPrivateDir = ./config/doom; # Directory containing the config.el, init.el
@@ -431,7 +434,7 @@ settings = {
           lib.mkOptionDefault
             {
               # "${modifier}+Return" = "exec ${pkgs.foot}/bin/foot";
-              "${modifier}+Ctrl+q" = "kill";
+              "${modifier}+y" = "kill";
               "${modifier}+u" = "workspace next";
               "${modifier}+o" = "exec foot -- ncpamixer";
               "${modifier}+p" = "exec ${menu}";
@@ -584,4 +587,3 @@ settings = {
   system.stateVersion = "23.05"; # Did you read the comment?
 
 }
-

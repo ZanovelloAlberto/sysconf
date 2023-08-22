@@ -16,7 +16,7 @@
       "KC_D",
       "KC_F",
       "KC_G",
-      "KC_SPC",
+      "KC_ESC",
       "KC_Z",
       "KC_X",
       "KC_C",
@@ -26,7 +26,7 @@
       "KC_NO",
       "KC_NO",
       "KC_LCTL",
-      "KC_LGUI",
+      "FN_MO13",
       "LT(2,KC_SPC)",
       "KC_BSLS",
       "KC_P",
@@ -51,7 +51,7 @@
       "KC_NO",
       "KC_RALT",
       "KC_LSFT",
-      "FN_MO13"
+      "KC_LGUI"
     ],
     [
       "S(KC_GRV)",
