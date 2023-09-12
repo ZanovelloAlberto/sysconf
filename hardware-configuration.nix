@@ -5,16 +5,28 @@
 
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
+    [
+      (modulesPath + "/installer/scan/not-detected.nix")
     ];
+  # hardware.system76.kernel-modules.enable = true;
+  hardware = {
+    opengl = {
+      enable = true;
 
+      extraPackages = with pkgs; [
+        libGL
+      ];
+      setLdLibraryPath = true;
+    };
+  };
   boot.initrd.availableKernelModules = [ "xhci_pci" "ehci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ ];
-  boot.extraModulePackages = [ ];
+  boot.extraModulePackages = [ config.boot.kernelPackages.system76 ];
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/ce4f9d9f-514f-48b7-911d-f25b06ce11e8";
+    {
+      device = "/dev/disk/by-uuid/ce4f9d9f-514f-48b7-911d-f25b06ce11e8";
       fsType = "ext4";
     };
 

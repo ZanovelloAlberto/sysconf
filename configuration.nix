@@ -3,8 +3,8 @@
 # and in the NixOS manual (accessible by running `nixos-help`).
 
 { inputs
-# , outputs
-# , lib
+  # , outputs
+  # , lib
 , config
 , pkgs
 , ...
@@ -28,8 +28,10 @@ let
     '';
   };
   user = "alberto";
-  i2c = config.boot.kernelPackages.callPackage ./pkgs/i2c_341.nix { };
-  droidcam = config.boot.kernelPackages.callPackage ./pkgs/droidcam.nix { };
+  i2c = config.boot.kernelPackages.callPackage ./pkgs/i2c.nix { };
+  # train_keep = pkgs.writeScriptBin "train_keep" ''
+  # '';
+  # droidcam = config.boot.kernelPackages.callPackage ./pkgs/droidcam.nix { };
   # pkgs.config.allowUnfree = true;
   # currently, there is some friction between sway and gtk:
   # https://github.com/swaywm/sway/wiki/GTK-3-settings-on-Wayland
@@ -45,7 +47,7 @@ let
       let
         schema = pkgs.gsettings-desktop-schemas;
         datadir = "${schema}/share/gsettings-schemas/${schema.name}";
-     in
+      in
       ''
         export XDG_DATA_DIRS=${datadir}:$XDG_DATA_DIRS
         gnome_schema=org.gnome.desktop.interface
@@ -62,15 +64,11 @@ let
       (i: {
         name = i;
         value = hideXdg;
-        # {
-        #         name = i;
-        #         exec = i;
-        #         noDisplay = true;
-        #       };
       })
       x)
       list);
-  makeCfg = path: { ".config/${path}".source = ./config/${path}; };
+  # makeCfg = path: { ".config/${path}".source = ./config/${path}; };
+  timer = ./pkgs/timer.nix;
 
 in
 {
@@ -83,8 +81,10 @@ in
 
   nix = {
     package = pkgs.nixFlakes;
+    settings.auto-optimise-store = true;
 
     settings = {
+      sandbox = "relaxed";
       extra-experimental-features = [ "nix-command" "flakes" ];
     };
   };
@@ -101,7 +101,18 @@ in
 
   # Use the GRUB 2 boot loader.
   boot = {
-    extraModulePackages = [ i2c droidcam ];
+    #   kernelPatches = [ {
+    # name = "pca9685";
+    # patch = null;
+    # extraConfig = ''
+    #     CONFIG_SYSFS y
+    #     CONFIG_PWM_PCA9685=m
+    #    '';
+    #    # CONFIG_PWM_PCA9685
+    # } ];
+    # kernelParams = "CONFIG_PWM_PCA9685=y";
+    kernelModules = [ "i2c_dev" "pwm" ];
+    extraModulePackages = [ i2c ];
     loader.grub =
       {
         splashImage = ./splash.png;
@@ -111,8 +122,6 @@ in
   };
 
   console.useXkbConfig = true; # use xkbOptions in tty.
-
-
 
   services = {
     udev = {
@@ -135,8 +144,6 @@ in
     geoclue2.enable = true;
   };
 
-
-
   security.polkit.enable = true;
   users.users.alberto = {
 
@@ -147,41 +154,24 @@ in
 
   # home-manager.useUserPackages = true;
   home-manager.users.${user} = { config, pkgs, lib, ... }: {
-    imports = [ inputs.doom-emacs.hmModule ];
+    imports = [ ./pkgs/nushell ];
     home = {
-      sessionPath = [ "/home/${user}/.config/emacs/bin/" ];
+      # sessionPath = [ "/home/${user}/.config/emacs/bin/" ];
+      sessionVariables = {
+        EDITOR = "hx";
+      };
       stateVersion = "23.05";
       username = user;
       homeDirectory = "/home/${user}";
       # file = makeCfg "doom"; #// makeCfg "rootbar";
+      # file = makeCfg "nushell";
     };
+
 
     xdg =
       {
-        desktopEntries = {
-
-          # discord = {
-          #   name = "Discord";
-          #   exec = "discord";
-          #   noDisplay = true;
-          # };
-          # emacs = {
-          #   name = "emacs";
-          #   exec = "emacs";
-          #   noDisplay = true;
-          # };
-          # "org.codeberg.dnkl.foot-server", "org.codeberg.dnkl.foot-server" = {
-          #   name = "poot";
-          #   exec = "poot";
-          #   noDisplay = true;
-          # };
-          # firefox = {
-          #   noDisplay = true;
-          #   name = "firefox";
-          # };
-        } // (deletexdg [
-          # "discord"
-          "emacs"
+        desktopEntries = { } // (deletexdg [
+          # "emacs"
           "org.codeberg.dnkl.foot-server"
           "org.codeberg.dnkl.foot"
           "umpv"
@@ -201,68 +191,50 @@ in
     programs = {
 
 
-helix = {
-  enable = true;
-
-settings = {
-  theme = "adwaita-dark";
-  editor = {
-    line-number = "relative";
-    lsp.display-messages = true;
-  };
-  keys.normal = {
-    space.space = "file_picker";
-    space.f = ":fmt";
-    space.w = ":w";
-    space.q = ":q";
-    space.t = ":run-shell-command foot";
-    space.v = ":run-shell-command nix-shell --run foot";
-    "C-j" = ["move_visual_line_down" "move_visual_line_down""move_visual_line_down"];
-    "C-k" = ["move_visual_line_up" "move_visual_line_up""move_visual_line_up"];
-    esc = [ "collapse_selection" "keep_primary_selection" ];
-  };
-};
-  languages = {language = [{
-    name = "rust";
-    auto-format = false;
-  }];};
-   
-  
-};
-
-      doom-emacs = {
-        enable = true;
-        doomPrivateDir = ./config/doom; # Directory containing the config.el, init.el
-      };
-      tiny = {
+      helix = {
         enable = true;
 
         settings = {
-          servers = [
-            {
-              addr = "irc.libera.chat";
-              port = 6697;
-              tls = true;
-              realname = "Alberto Zanovello";
-              nicks = [ "Alberto" "ll" ];
-            }
-            # {
-            #   addr = "chat.freenode.net";
-            # }
-          ];
-          defaults = {
-            nicks = [ "Alberto" "ll" ];
-            realname = "vola";
-            join = [ "#go-nuts" "#rust" ];
-            tls = true;
+          theme = "adwaita-dark";
+          editor = {
+            line-number = "relative";
+            lsp.display-messages = true;
+          };
+          keys.normal = {
+            space.space = "file_picker";
+            space.f = ":fmt";
+            space.w = ":w";
+            space.q = ":q";
+            space.t = ":run-shell-command foot";
+            space.u = ":run-shell-command nix-shell --run foot";
+            "C-j" = [ "move_visual_line_down" "move_visual_line_down" "move_visual_line_down" ];
+            "C-k" = [ "move_visual_line_up" "move_visual_line_up" "move_visual_line_up" ];
+            esc = [ "collapse_selection" "keep_primary_selection" ];
           };
         };
-      };
-      eww = {
-        # enable = true;
-        configDir = ./config/eww;
+        languages = {
+          language = [
+            {
+              name = "rust";
+              auto-format = false;
+            }
+            {
+              name = "nix";
+              formatter = { command = "nixpkgs-fmt"; };
+            }
+            {
+              name = "python";
+            }
+          ];
+        };
+
+
       };
 
+      # doom-emacs = {
+      #   enable = true;
+      #   doomPrivateDir = ./config/doom; # Directory containing the config.el, init.el
+      # };
       git = {
         enable = true;
         userName = "ZanovelloAlberto";
@@ -374,29 +346,8 @@ settings = {
       };
     };
 
-    # xdg.configFile."yambar/config.yml".source = ./config.yml;
-    # xdg.configFile."rootbar/config".source = ./config;
-    # xdg.configFile."rootbar/style.css".source = ./style.css;
-    # xdg.configFile."yambar/config.yml".source = (pkgs.formats.yaml { }).generate "something" {
-    #   settings = {
-    #     draw_bold_text_with_bright_colors = true;
-    #     dynamic_title = true;
-    #     live_config_reload = true;
-    #     window.dimensions = {
-    #       columns = 0;
-    #       lines = 0;
-    #     };
-    #     scrolling = {
-    #       history = 10000;
-    #       multiplier = 3;
-    #     };
-    #   };
-    # };
-
     wayland.windowManager.sway = {
       enable = true;
-
-
 
       config = {
         fonts = {
@@ -434,7 +385,7 @@ settings = {
           lib.mkOptionDefault
             {
               # "${modifier}+Return" = "exec ${pkgs.foot}/bin/foot";
-              "${modifier}+y" = "kill";
+              "${modifier}+q" = "kill";
               "${modifier}+u" = "workspace next";
               "${modifier}+o" = "exec foot -- ncpamixer";
               "${modifier}+p" = "exec ${menu}";
@@ -474,15 +425,17 @@ settings = {
     };
     home.packages = with pkgs;[
       # tui
-      
+
       neovim-qt
-	    helix
+      python3
+      helix
+      i2c-tools
       nil
+      nixpkgs-fmt
       # emacs
-      virtualbox
+      # virtualbox
       nodejs
-      kakoune
-      eww-wayland
+      # kakoune
       pulseaudio
       # yambar
       # nvim-config.packages.x86_64-linux.default
@@ -498,21 +451,30 @@ settings = {
       unzip
       ripgrep
 
+      distrobox
+      wev # window wayalnd event
+      blockbench-electron # modeling
+
+      calc
+
       # gui
       # alacritty
       foot
       via
-      qmk
+      nushell
+      # qmk
       ncpamixer # audio control
-      zathura # pdf viewer
+      # zathura # pdf viewer
       imv # image viewer
-      mpv # video player
+      # mpv # video player
 
       # languages
-      cargo
-      clang
-      zls
-      zig
+      # cargo
+      # clang
+      # clang-tools
+      # zls
+      # python3Packages.python-lsp-server
+      # zig
 
       #wayland
       sway
@@ -522,7 +484,6 @@ settings = {
       configure-gtk
       wayland
       xdg-utils # for opening default programs when clicking links
-      glib # gsettings
       dracula-theme # gtk theme
       gnome3.adwaita-icon-theme # default gnome cursors
       swaylock
@@ -531,7 +492,6 @@ settings = {
       grim # screenshot functionality
       slurp # screenshot functionality
       wl-clipboard # wl-copy and wl-paste for copy/paste from stdin / stdout
-      bemenu # wayland clone of dmenu
       mako # notification system developed by swaywm maintainer
       wdisplays # tool to configure displays
 
@@ -540,13 +500,20 @@ settings = {
 
 
   # -------------------- SWAY
-  environment.systemPackages = with pkgs; [
-    git
-    google-chrome
-    discord
-    obs-studio
-
-  ];
+  environment = {
+    systemPackages = with pkgs; [
+      git
+      google-chrome
+      # discord
+      # obs-studio
+      i2c-tools
+    ];
+    interactiveShellInit = ''
+      alias open='xdg-open'
+    '';
+    # extraOutputsToInstall = ["dev"];
+    variables.C_INCLUDE_PATH = "${pkgs.i2c-tools}/include";
+  };
 
   xdg = {
     portal = {
