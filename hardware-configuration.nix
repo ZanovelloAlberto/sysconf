@@ -24,6 +24,11 @@
   boot.kernelModules = [ ];
   boot.extraModulePackages = [ config.boot.kernelPackages.system76 ];
 
+  boot.loader.grub.extraEntries = ''
+    menuentry "Windows 7" {
+      chainloader (hd0,1)+1
+    }
+  '';
   fileSystems."/" =
     {
       device = "/dev/disk/by-uuid/ce4f9d9f-514f-48b7-911d-f25b06ce11e8";

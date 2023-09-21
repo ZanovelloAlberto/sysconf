@@ -56,11 +56,11 @@ in
       # alacritty
       foot
       # via
-      nushell
+      # nushell
       # qmk
       ncpamixer # audio control
       # zathura # pdf viewer
-      imv # image viewer
+      # imv # image viewer
       # mpv # video player
 
       # languages
@@ -87,8 +87,8 @@ in
       grim # screenshot functionality
       slurp # screenshot functionality
       wl-clipboard # wl-copy and wl-paste for copy/paste from stdin / stdout
-      mako # notification system developed by swaywm maintainer
-      wdisplays # tool to configure displays
+      # mako # notification system developed by swaywm maintainer
+      # wdisplays # tool to configure displays
 
     ];
 
@@ -127,7 +127,7 @@ in
 
     nushell = import ./nushell pkgs;
 
-    helix = import ./helix;
+    helix = import ./helix pkgs ;
 
 
 

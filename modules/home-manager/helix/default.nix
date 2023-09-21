@@ -1,8 +1,5 @@
 # helix module
-
-{}: {
-
-
+{ system, file, self, key, path, fetchurl, home-manager, nixos, lib, config, root, _type, ... }: {
   enable = true;
 
   settings = {
@@ -40,7 +37,15 @@
         name = "go";
         # "autoSearchPaths" = true;
       }
+      # {
+        # name = "nim";
+        # language-server = {
+          # command = "nimlsp";
+          # args = [ "" ];
+        # };
+
+
+      # }
     ];
   };
-
 }
