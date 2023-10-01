@@ -2,7 +2,7 @@
   description = "nixos conf";
   inputs = {
     nixpkgs = {
-      url = "github:nixos/nixpkgs/nixos-unstable";
+      url = "github:nixos/nixpkgs/nixos-23.05";
       # url = "github:nixos/nixpkgs/master";
     };
 

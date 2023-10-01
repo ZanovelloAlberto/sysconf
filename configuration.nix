@@ -70,6 +70,21 @@ in
   nix = {
     package = pkgs.nixFlakes;
     settings.auto-optimise-store = true;
+    registry = {
+      mytemp.to = {
+        owner = "ZanovelloAlberto";
+        repo = "templates";
+        type = "github";
+      };
+
+      # ddd.to = {
+      #   owner = "NixOs";
+      #   repo = "nixpkgs";
+      #   rev = "nixos-23.05";
+      #   type = "github";
+      # };
+      # mytemp = "https://github.com/ZanovelloAlberto/templates.git";
+    };
 
     settings = {
       sandbox = "relaxed";
@@ -137,16 +152,18 @@ in
 
     isNormalUser = true;
     shell = pkgs.bash;
-    extraGroups = [ "media" "dialout" "wheel" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "media" "dialout" "wheel" "adbusers" ]; # Enable ‘sudo’ for the user.
   };
 
   # home-manager.useUserPackages = true;
-  home-manager.users.${user} =  import ./modules/home-manager;
+  home-manager.users.${user} = import ./modules/home-manager;
 
   environment = {
     systemPackages = with pkgs; [
       git
       google-chrome
+      sysdig
+      vscode
       # discord
       # obs-studio
       i2c-tools
@@ -168,6 +185,8 @@ in
 
   # enable sway window manager
   programs = {
+    sysdig.enable = true;
+    adb.enable = true;
     # fish = {
     #   enable = true;
     #   loginShellInit = "sway\n";
